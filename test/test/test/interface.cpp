@@ -8,7 +8,7 @@
 
 
 namespace Interface {
-	MenuObject::~MenuObject() { delete hConsole; }
+	MenuObject::~MenuObject() { }
 	void MenuObject::drawSimple() {};
 	void MenuObject::drawChoosen() {};
 
@@ -63,8 +63,8 @@ namespace Interface {
 	ChangableList::ChangableList(std::string _name, std::vector<std::string> _choosingArray, int defaultValue) {
 		name = _name;
 		objectType = MenuElement::MenuChangableList;
-		value = defaultValue;
-		arrayLenght = _choosingArray.size();
+		value = defaultValue >= 0 ? defaultValue < _choosingArray.size() ? defaultValue : _choosingArray.size() - 1 : 0;
+		choosingArray = _choosingArray;
 	}
 
 	std::vector<std::string> ChangableList::GetArray() {
@@ -74,11 +74,11 @@ namespace Interface {
 	void ChangableList::sub() {
 		value -= 1;
 		if (value < 0)
-			value = arrayLenght - 1;
+			value = choosingArray.size() - 1;
 	}
 	void ChangableList::add() {
 		value += 1;
-		if (value > arrayLenght - 1)
+		if (value > choosingArray.size() - 1)
 			value = 0;
 	}
 
@@ -131,72 +131,52 @@ namespace Interface {
 	}
 	void Header::drawChoosen() {}
 
-	MenuHandler::MenuHandler(unsigned int lenght) {
-		collection = std::vector<MenuObject*>(lenght);
-	}
-
 	MenuHandler::MenuHandler(std::initializer_list<MenuObject*> l) {
 		collection = l;
 	}
 	MenuHandler::~MenuHandler() {
 		for (size_t i = 0; i < collection.size(); i++) {
-			collection[i]->~MenuObject();
 			delete collection[i];
 		}
 	}
 
-	int MenuHandler::Run() {
+	int MenuHandler::run() {
 		unsigned int index = 0;
 		Keys keyPressed;
-		if ((*(collection[index])).objectType == MenuElement::MenuHeader) {
+		if (collection[index]->objectType == MenuElement::MenuHeader) {
 			index++;
 		}
 		while (true) {
-			system("cls");
-			for (int i = 0; i < collection.size(); i++) {
-				if (i == index) {
-					(*(collection[i])).drawChoosen();
-				}
-				else {
-					(*(collection[i])).drawSimple();
-				}
-			}
-			{
-				keyPressed = (Keys)_getch();
-				if (keyPressed == 0 || keyPressed == 244) 
-					keyPressed = (Keys)_getch();
-			}
-			switch (keyPressed) {
-			case Keys::UpArrow:
+			draw(index);
+			switch (getKey()) {
+			case Keys::DownArrow:
 				index++;
 				index = (index + collection.size()) % collection.size();
-				if ((*(collection[index])).objectType == MenuElement::MenuHeader) {
+				if (collection[index]->objectType == MenuElement::MenuHeader) {
 					index++;
 				}
 				break;
-			case Keys::DownArrow:
+			case Keys::UpArrow:
 				index--;
-				if ((*(collection[index])).objectType == MenuElement::MenuHeader) {
+				if (collection[index]->objectType == MenuElement::MenuHeader) {
 					index--;
 				}
 				index = (index + collection.size()) % collection.size();
 				break;
 			case Keys::RightArrow:
-				if ((*(collection[index])).objectType != MenuElement::MenuChoosable && (*(collection[index])).objectType != MenuElement::MenuHeader) {
+				if (collection[index]->objectType != MenuElement::MenuChoosable && collection[index]->objectType != MenuElement::MenuHeader) {
 					auto temp = dynamic_cast<Changable*>(collection[index]);
 					temp->add();
-					delete temp;
 				}
 				break;
 			case Keys::LeftArrow:
-				if ((*(collection[index])).objectType != MenuElement::MenuChoosable && (*(collection[index])).objectType != MenuElement::MenuHeader) {
+				if (collection[index]->objectType != MenuElement::MenuChoosable && collection[index]->objectType != MenuElement::MenuHeader) {
 					auto temp = dynamic_cast<Changable*>(collection[index]);
 					temp->sub();
-					delete temp;
 				}
 				break;
 			case Keys::Enter:
-				if ((*(collection[index])).objectType == MenuElement::MenuChoosable) {
+				if (collection[index]->objectType == MenuElement::MenuChoosable) {
 					return index;
 				}
 				break;
@@ -204,6 +184,26 @@ namespace Interface {
 				return collection.size() - 1;
 			default:
 				break;
+			}
+		}
+	}
+
+	Keys MenuHandler::getKey() {
+		int keyPressed = _getch();
+		if (keyPressed == 0 || keyPressed == 224) {
+			keyPressed = _getch();
+		}
+		return (Keys)keyPressed;
+	}
+
+	void MenuHandler::draw(int index) {
+		system("cls");
+		for (int i = 0; i < collection.size(); i++) {
+			if (i == index) {
+				collection[i]->drawChoosen();
+			}
+			else {
+				collection[i]->drawSimple();
 			}
 		}
 	}

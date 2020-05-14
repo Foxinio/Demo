@@ -75,7 +75,6 @@ namespace Interface {
 	};
 
 	class ChangableList : public Changable {
-		int arrayLenght;
 		std::vector<std::string> choosingArray;
 	public:
 
@@ -90,7 +89,7 @@ namespace Interface {
 		void drawChoosen();
 	};
 
-	class ChangableBool : Changable {
+	class ChangableBool : public Changable {
 	public:
 		bool boolValue;
 
@@ -103,7 +102,7 @@ namespace Interface {
 		void drawChoosen();
 	};
 
-	class Header : MenuObject {
+	class Header : public MenuObject {
 	public:
 		Header(std::string _name);
 
@@ -131,6 +130,9 @@ namespace Interface {
 
 		~MenuHandler();
 
-		int Run();
+		int run();
+	private:
+		void draw(int index);
+		Keys getKey();
 	};
 };

@@ -1,15 +1,9 @@
-
-//#ifndef PCH_REFERENCE
-//#define PCH_REFERENCE
 #include "pch.h"
-//#endif
 
 #include "interface.h"
 #include <iostream>
 #include <string>
 #include <conio.h>
-
-#define LOG(x) std::cout << x << std::endl
 
 int main()
 {
@@ -20,20 +14,23 @@ int main()
 			new Interface::Header("Main Menu"),
 			changableValue,
 			changableList,
-			new Interface::ChangableBool("PvP", true),
+			new Interface::ChangableBool("Test-mode", true),
 			new Interface::Choosable("Accept"),
 			new Interface::Choosable("Return")
 		}
 	);
 
-	if (handler.Run() == 4) {
+
+	if (handler.run() == 4) {
+		system("cls");
 		auto Array = changableList->GetArray();
-		LOG("You've choosen: ");
-		LOG(std::string(std::string("World Size: ") + std::to_string(changableValue->value)));
-		LOG(std::string(std::string("Difficulty: ") + Array[changableList->value]));
-		LOG(std::string(std::string("PvP: ") + (dynamic_cast<Interface::ChangableBool*>(handler.collection[3])->boolValue ? "ON" : "OFF")));
+		std::cout << "You've choosen: " << std::endl;
+		std::cout << changableValue->name << ": " <<  changableValue->value << std::endl;
+		std::cout << changableList->name << ": " << Array[changableList->value] << std::endl;
+		std::cout << handler.collection[3]->name << ": " <<  dynamic_cast<Interface::ChangableBool*>(handler.collection[3])->boolValue ? "ON" : "OFF";
 	}
 	else {
-		LOG("You didn't choose anything.");
+		system("cls");
+		std::cout << "You didn't choose anything." << std::endl;
 	}
 }
